@@ -6,29 +6,38 @@ import {
   Delete,
   Body,
   Param,
+  HttpCode,
 } from '@nestjs/common';
+import { CreateEventDto } from './create-event.dto';
+import { UpdateEventDto } from './update-event.dto';
 
 @Controller('/events')
 export class EventController {
+  private events: CreateEventDto[] = [
+    {
+      id: 2,
+      name: 'Event 2',
+      description: 'Educational event for students',
+      when: '12-12-2023',
+      address: 'Second street',
+    },
+    {
+      id: 1,
+      name: 'Event 1',
+      description: 'Public event for all',
+      when: '12-12-2023',
+      address: 'Main street ',
+    },
+  ];
+
   @Post()
-  createEvent(@Body() body) {
-    return body;
+  createEvent(@Body() input: CreateEventDto) {
+    return input;
   }
 
   @Get()
   findAll() {
-    return [
-      {
-        id: 2,
-        name: 'Event 2',
-        when: '12-12-2023',
-      },
-      {
-        id: 1,
-        name: 'Event 1',
-        when: '12-12-2023',
-      },
-    ];
+    return this.events;
   }
 
   @Get(':id')
@@ -37,7 +46,7 @@ export class EventController {
   }
 
   @Patch(':id')
-  updateOne(@Param('id') id: number, @Body() input) {
+  updateOne(@Param('id') id: number, @Body() input: UpdateEventDto) {
     return {
       message: 'update',
       id,
@@ -46,7 +55,8 @@ export class EventController {
   }
 
   @Delete(':id')
-  deleteOne(@Param('id') id) {
+  @HttpCode(204)
+  deleteOne(@Param('id') id: number) {
     return `Event with ${id} is deleted`;
   }
 }
