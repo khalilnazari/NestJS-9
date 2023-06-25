@@ -11,49 +11,52 @@ import {
 import { CreateEventDto } from './create-event.dto';
 import { UpdateEventDto } from './update-event.dto';
 import { Event } from './events.entity';
+import { Repository } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
 
 @Controller('/events')
 export class EventController {
+  constructor(
+    @InjectRepository(Event)
+    private readonly eventRepository: Repository<Event>,
+  ) {}
+
   private events: Event[] = [];
 
   @Post()
-  createEvent(@Body() input: CreateEventDto) {
-    const event = {
+  async createEvent(@Body() input: CreateEventDto) {
+    return await this.eventRepository.save({
       ...input,
       when: new Date(input.when),
-      id: this.events.length + 1,
-    };
-    this.events.push(event);
-    return event;
+    });
   }
 
   @Get()
-  findAll() {
-    return this.events;
+  async findAll() {
+    return await this.eventRepository.find();
   }
 
   @Get(':id')
-  findOne(@Param('id') id) {
-    const event = this.events.find((event) => event.id === parseInt(id));
-    return event;
+  async findOne(@Param('id') id): Promise<Event> {
+    return await this.eventRepository.findOneBy({ id });
+    //
   }
 
   @Patch(':id')
-  updateOne(@Param('id') id, @Body() input: UpdateEventDto) {
-    const index = this.events.findIndex((event) => event.id === parseInt(id));
+  async updateOne(@Param('id') id, @Body() input: UpdateEventDto) {
+    const event = await this.eventRepository.findOneBy({ id });
 
-    this.events[index] = {
-      ...this.events[index],
+    return await this.eventRepository.save({
+      ...event,
       ...input,
-      when: input.when ? new Date(input.when) : this.events[index].when,
-    };
-
-    return this.events[index];
+      when: input.when ? new Date(input.when) : event.when,
+    });
   }
 
   @Delete(':id')
   @HttpCode(204)
-  deleteOne(@Param('id') id) {
-    this.events = this.events.filter((event) => event.id !== parseInt(id));
+  async deleteOne(@Param('id') id) {
+    const event = await this.eventRepository.findOneBy({ id });
+    await this.eventRepository.remove(event);
   }
 }
