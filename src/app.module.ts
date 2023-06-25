@@ -4,18 +4,22 @@ import { AppService } from './app.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Event } from './event/event.entity';
 import { EventModule } from './event/event.module';
+import { ConfigModule } from '@nestjs/config';
+import orgmConfigLocal from './config/orgm.config.local';
+import orgmConfigProd from './config/orgm.config.prod';
 
 @Module({
   imports: [
-    TypeOrmModule.forRoot({
-      type: 'postgres',
-      host: 'localhost',
-      port: 5432,
-      username: 'postgres',
-      password: 'pgadmin',
-      database: 'nestevent',
-      entities: [Event],
-      synchronize: true,
+    ConfigModule.forRoot({
+      isGlobal: true,
+      load: [orgmConfigLocal],
+      expandVariables: true,
+    }),
+    TypeOrmModule.forRootAsync({
+      useFactory:
+        process.env.NODE_ENV !== 'production'
+          ? orgmConfigLocal
+          : orgmConfigProd,
     }),
 
     EventModule,

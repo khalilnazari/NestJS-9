@@ -16,7 +16,7 @@ import { Event } from './event.entity';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 
-@Controller()
+@Controller('/event')
 export class EventController {
   constructor(
     @InjectRepository(Event)
