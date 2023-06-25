@@ -9,6 +9,8 @@ import {
   HttpCode,
   ParseIntPipe,
   ValidationPipe,
+  Logger,
+  NotFoundException,
 } from '@nestjs/common';
 import { CreateEventDto } from './dto/create-event.dto';
 import { UpdateEventDto } from './dto/update-event.dto';
@@ -18,6 +20,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 
 @Controller('/event')
 export class EventController {
+  private readonly logger = new Logger(EventController.name);
+
   constructor(
     @InjectRepository(Event)
     private readonly eventRepository: Repository<Event>,
@@ -28,20 +32,34 @@ export class EventController {
   // @Body(ValidationPipe) using ValidationPipe for a single request
   @Post()
   async createEvent(@Body() input: CreateEventDto): Promise<Event> {
-    return await this.eventRepository.save({
+    const event = await this.eventRepository.save({
       ...input,
       when: new Date(input.when),
     });
+
+    this.logger.debug(`event is created!`);
+
+    return event;
   }
 
   @Get()
   async findAll(): Promise<Event[]> {
-    return await this.eventRepository.find();
+    const events = await this.eventRepository.find();
+    this.logger.log(`We've found ${events.length} events`);
+    return events;
   }
 
   @Get(':id')
   async findOne(@Param('id', ParseIntPipe) id: number): Promise<Event> {
-    return await this.eventRepository.findOneBy({ id });
+    const event = await this.eventRepository.findOneBy({ id });
+
+    if (!event) {
+      throw new NotFoundException({
+        message: `Not event associated with this id found. ID=${id}`,
+      });
+    }
+
+    return event;
   }
 
   @Patch(':id')
@@ -60,9 +78,13 @@ export class EventController {
 
   @Delete(':id')
   @HttpCode(204)
-  async deleteOne(@Param('id', ParseIntPipe) id: number): Promise<{}> {
+  async deleteOne(@Param('id', ParseIntPipe) id: number) {
     const event = await this.eventRepository.findOneBy({ id });
+
+    if (!event) {
+      throw new NotFoundException();
+    }
+
     await this.eventRepository.remove(event);
-    return { message: `Event with id ${id} has been successfully deleted!` };
   }
 }
