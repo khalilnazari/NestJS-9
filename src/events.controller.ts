@@ -7,6 +7,8 @@ import {
   Body,
   Param,
   HttpCode,
+  ParseIntPipe,
+  ValidationPipe,
 } from '@nestjs/common';
 import { CreateEventDto } from './create-event.dto';
 import { UpdateEventDto } from './update-event.dto';
@@ -23,8 +25,9 @@ export class EventController {
 
   private events: Event[] = [];
 
+  // @Body(ValidationPipe) using ValidationPipe for a single request
   @Post()
-  async createEvent(@Body() input: CreateEventDto) {
+  async createEvent(@Body() input: CreateEventDto): Promise<Event> {
     return await this.eventRepository.save({
       ...input,
       when: new Date(input.when),
@@ -32,18 +35,20 @@ export class EventController {
   }
 
   @Get()
-  async findAll() {
+  async findAll(): Promise<Event[]> {
     return await this.eventRepository.find();
   }
 
   @Get(':id')
-  async findOne(@Param('id') id): Promise<Event> {
+  async findOne(@Param('id', ParseIntPipe) id: number): Promise<Event> {
     return await this.eventRepository.findOneBy({ id });
-    //
   }
 
   @Patch(':id')
-  async updateOne(@Param('id') id, @Body() input: UpdateEventDto) {
+  async updateOne(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() input: UpdateEventDto,
+  ): Promise<Event> {
     const event = await this.eventRepository.findOneBy({ id });
 
     return await this.eventRepository.save({
@@ -55,8 +60,9 @@ export class EventController {
 
   @Delete(':id')
   @HttpCode(204)
-  async deleteOne(@Param('id') id) {
+  async deleteOne(@Param('id', ParseIntPipe) id: number): Promise<{}> {
     const event = await this.eventRepository.findOneBy({ id });
     await this.eventRepository.remove(event);
+    return { message: `Event with id ${id} has been successfully deleted!` };
   }
 }
