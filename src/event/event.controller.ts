@@ -10,13 +10,13 @@ import {
   ParseIntPipe,
   ValidationPipe,
 } from '@nestjs/common';
-import { CreateEventDto } from './create-event.dto';
-import { UpdateEventDto } from './update-event.dto';
-import { Event } from './events.entity';
+import { CreateEventDto } from './dto/create-event.dto';
+import { UpdateEventDto } from './dto/update-event.dto';
+import { Event } from './event.entity';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 
-@Controller('/events')
+@Controller()
 export class EventController {
   constructor(
     @InjectRepository(Event)
