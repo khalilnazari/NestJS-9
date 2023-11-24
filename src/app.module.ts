@@ -2,9 +2,8 @@ import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { Event } from './event/event.entity';
-import { EventModule } from './event/event.module';
 import { ConfigModule } from '@nestjs/config';
+import { UserModule } from './user/user.module';
 import orgmConfigLocal from './config/orgm.config.local';
 import orgmConfigProd from './config/orgm.config.prod';
 
@@ -22,7 +21,7 @@ import orgmConfigProd from './config/orgm.config.prod';
           : orgmConfigProd,
     }),
 
-    EventModule,
+    UserModule,
   ],
   controllers: [AppController],
   providers: [AppService],
