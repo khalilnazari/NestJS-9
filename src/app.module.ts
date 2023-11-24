@@ -4,6 +4,7 @@ import { AppService } from './app.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule } from '@nestjs/config';
 import { UserModule } from './user/user.module';
+import { RoleModule } from './role/role.module';
 import orgmConfigLocal from './config/orgm.config.local';
 import orgmConfigProd from './config/orgm.config.prod';
 
@@ -22,6 +23,8 @@ import orgmConfigProd from './config/orgm.config.prod';
     }),
 
     UserModule,
+
+    RoleModule,
   ],
   controllers: [AppController],
   providers: [AppService],
