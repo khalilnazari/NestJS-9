@@ -3,7 +3,7 @@ import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 @Entity('User')
 export class User {
   @PrimaryGeneratedColumn('uuid')
-  userId: number;
+  userId: string;
 
   @Column({
     type: 'varchar',
@@ -20,6 +20,6 @@ export class User {
   @Column({ type: 'varchar' })
   role: string;
 
-  @Column({ type: 'boolean' })
+  @Column({ type: 'varchar' })
   isActive: string;
 }

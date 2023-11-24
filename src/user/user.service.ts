@@ -1,4 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -12,32 +16,92 @@ export class UserService {
     private usersRepository: Repository<User>,
   ) {}
 
-  create(createUserDto: CreateUserDto): Promise<InsertResult> {
-    return this.usersRepository
-      .createQueryBuilder()
-      .insert()
-      .into(User)
-      .values(createUserDto)
-      .execute();
+  async create(
+    createUserDto: CreateUserDto,
+  ): Promise<InsertResult | ConflictException> {
+    try {
+      const user = await this.findByEmail(createUserDto.email);
+      console.log(user);
+      if (user) {
+        return new ConflictException();
+      }
+
+      return await this.usersRepository
+        .createQueryBuilder()
+        .insert()
+        .into(User)
+        .values(createUserDto)
+        .execute();
+    } catch (error) {
+      return error;
+    }
   }
 
-  findAll(): Promise<User[]> {
-    return this.usersRepository.find();
+  async findAll(): Promise<User[] | NotFoundException> {
+    try {
+      const users = await this.usersRepository.find();
+      if (!users.length) {
+        return new NotFoundException();
+      }
+      return users;
+    } catch (error) {
+      return error;
+    }
   }
 
-  findOne(id: number): Promise<User> {
-    return this.usersRepository.findOneBy({ userId: id });
+  async findOne(id: string): Promise<User | NotFoundException> {
+    try {
+      const user = await this.usersRepository.findOneBy({ userId: id });
+
+      if (!user) {
+        return new NotFoundException();
+      }
+
+      return user;
+    } catch (error) {
+      return error;
+    }
   }
 
-  update(userId: number, updateUserDto: UpdateUserDto) {
-    return this.usersRepository
-      .createQueryBuilder()
-      .update(User)
-      .set(updateUserDto)
-      .where('userId = :userId', { userId });
+  async update(userId: string, updateUserDto: UpdateUserDto) {
+    try {
+      const userExist = await this.findOne(userId);
+      if (!userExist) {
+        return new NotFoundException();
+      }
+
+      return await this.usersRepository
+        .createQueryBuilder()
+        .update(User)
+        .set(updateUserDto)
+        .where('userId = :userId', { userId })
+        .execute();
+    } catch (error) {
+      return error;
+    }
   }
 
-  remove(id: number): Promise<DeleteResult> {
-    return this.usersRepository.delete({ userId: id });
+  async remove(id: string): Promise<DeleteResult | NotFoundException> {
+    try {
+      const userExist = await this.findOne(id);
+      if (!userExist) return new NotFoundException();
+      return this.usersRepository.delete({ userId: id });
+    } catch (error) {
+      return error;
+    }
+  }
+
+  async findByEmail(email: string): Promise<User | NotFoundException> {
+    try {
+      const user = await this.usersRepository
+        .createQueryBuilder('user')
+        .where('user.email = :email', { email })
+        .getOne();
+
+      if (!user) return new NotFoundException();
+      return user;
+    } catch (error) {
+      return error;
+    }
   }
 }
