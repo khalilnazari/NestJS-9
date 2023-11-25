@@ -1,9 +1,11 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Account } from 'src/account/entities/account.entity';
+import { Project } from 'src/projects/entities/project.entity';
+import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity('User')
 export class User {
   @PrimaryGeneratedColumn('uuid')
-  userId: string;
+  id: string;
 
   @Column({
     type: 'varchar',
@@ -22,4 +24,10 @@ export class User {
 
   @Column({ type: 'varchar' })
   isActive: string;
+
+  @ManyToOne(() => Account, (account) => account.users)
+  account: Account;
+
+  @ManyToOne(() => Project, (project) => project.users)
+  project: Project;
 }

@@ -1,4 +1,5 @@
 import { Project } from 'src/projects/entities/project.entity';
+import { User } from 'src/user/entities/user.entity';
 import {
   Column,
   CreateDateColumn,
@@ -25,6 +26,9 @@ export class Account {
 
   @OneToMany(() => Project, (projects) => projects.account)
   projects: Project[];
+
+  @OneToMany(() => User, (user) => user.account)
+  users: User[];
 
   @CreateDateColumn({
     type: 'timestamp',

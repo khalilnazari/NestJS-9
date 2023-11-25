@@ -8,30 +8,53 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DeleteResult, InsertResult, Repository } from 'typeorm';
 import { User } from './entities/user.entity';
+import { AccountService } from 'src/account/account.service';
+import { ProjectsService } from 'src/projects/projects.service';
 
 @Injectable()
 export class UserService {
   constructor(
     @InjectRepository(User)
     private usersRepository: Repository<User>,
+    private readonly accountService: AccountService,
+    private readonly projectService: ProjectsService,
   ) {}
 
   async create(
     createUserDto: CreateUserDto,
   ): Promise<InsertResult | ConflictException> {
+    const { accountInfo, projectInfo, ...newUser } = createUserDto;
+
     try {
-      const user = await this.findByEmail(createUserDto.email);
-      console.log(user);
-      if (user) {
-        return new ConflictException();
+      const projectExist = await this.projectService.findOne(projectInfo);
+      if (projectExist.status === 404) {
+        return new NotFoundException(`Project[${projectInfo}] does not exist`);
       }
 
-      return await this.usersRepository
+      const accountExist = await this.accountService.findOne(accountInfo);
+      if (accountExist.status === 404) {
+        return new NotFoundException(`Account[${accountInfo}] does not exist`);
+      }
+
+      const userExist = await this.usersRepository.findOneBy({
+        email: createUserDto.email,
+      });
+      if (userExist)
+        return new ConflictException(`User[${createUserDto.email}] exist`);
+
+      const response = await this.usersRepository
         .createQueryBuilder()
         .insert()
-        .into(User)
-        .values(createUserDto)
+        .values([
+          {
+            ...newUser,
+            account: { id: accountInfo },
+            project: { id: projectInfo },
+          },
+        ])
         .execute();
+
+      return response;
     } catch (error) {
       return error;
     }
@@ -49,12 +72,12 @@ export class UserService {
     }
   }
 
-  async findOne(id: string): Promise<User | NotFoundException> {
+  async findOne(userId: string): Promise<User | NotFoundException> {
     try {
-      const user = await this.usersRepository.findOneBy({ userId: id });
+      const user = await this.usersRepository.findOneBy({ id: userId });
 
       if (!user) {
-        return new NotFoundException();
+        return new NotFoundException(`User[${userId}] does not exist`);
       }
 
       return user;
@@ -64,28 +87,53 @@ export class UserService {
   }
 
   async update(userId: string, updateUserDto: UpdateUserDto) {
+    const { accountInfo, projectInfo, ...userInfo } = updateUserDto;
     try {
-      const userExist = await this.findOne(userId);
-      if (!userExist) {
-        return new NotFoundException();
+      if (projectInfo) {
+        const projectExist = await this.projectService.findOne(projectInfo);
+        if (projectExist.status === 404) {
+          return new NotFoundException(
+            `Project[${projectInfo}] does not exist`,
+          );
+        }
       }
 
-      return await this.usersRepository
+      if (accountInfo) {
+        const accountExist = await this.accountService.findOne(accountInfo);
+        if (accountExist.status === 404) {
+          return new NotFoundException(
+            `Project[${accountInfo}] does not exist`,
+          );
+        }
+      }
+
+      const userExist = await this.findOne(userId);
+      if (!userExist) {
+        return new NotFoundException(`User[${userId}] does not exist`);
+      }
+
+      const response = await this.usersRepository
         .createQueryBuilder()
-        .update(User)
-        .set(updateUserDto)
-        .where('userId = :userId', { userId })
+        .update()
+        .set({
+          ...userInfo,
+          account: { id: accountInfo },
+          project: { id: projectInfo },
+        })
+        .where('id = :id', { id: userId })
         .execute();
+
+      return response;
     } catch (error) {
       return error;
     }
   }
 
-  async remove(id: string): Promise<DeleteResult | NotFoundException> {
+  async remove(userId: string): Promise<DeleteResult | NotFoundException> {
     try {
-      const userExist = await this.findOne(id);
+      const userExist = await this.findOne(userId);
       if (!userExist) return new NotFoundException();
-      return this.usersRepository.delete({ userId: id });
+      return this.usersRepository.delete({ id: userId });
     } catch (error) {
       return error;
     }
@@ -94,8 +142,8 @@ export class UserService {
   async findByEmail(email: string): Promise<User | NotFoundException> {
     try {
       const user = await this.usersRepository
-        .createQueryBuilder('user')
-        .where('user.email = :email', { email })
+        .createQueryBuilder()
+        .where('email = :email', { email })
         .getOne();
 
       if (!user) return new NotFoundException();

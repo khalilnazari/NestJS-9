@@ -1,9 +1,11 @@
 import { Account } from 'src/account/entities/account.entity';
+import { User } from 'src/user/entities/user.entity';
 import {
   Column,
   CreateDateColumn,
   Entity,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -18,6 +20,9 @@ export class Project {
 
   @ManyToOne(() => Account, (account) => account.projects)
   account: Account;
+
+  @OneToMany(() => User, (user) => user.project)
+  users: User[];
 
   @CreateDateColumn({
     type: 'timestamp with time zone',

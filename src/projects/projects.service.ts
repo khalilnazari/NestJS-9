@@ -64,7 +64,7 @@ export class ProjectsService {
   }
 
   async update(id: string, updateProjectDto: UpdateProjectDto) {
-    const { accountInfo, ...newAccount } = updateProjectDto;
+    const { accountInfo, ...rest } = updateProjectDto;
 
     try {
       const existProject = await this.findOne(id);
@@ -73,7 +73,7 @@ export class ProjectsService {
       return await this.projectRepository
         .createQueryBuilder()
         .update()
-        .set({ ...newAccount, account: { id: accountInfo } })
+        .set({ ...rest, account: { id: accountInfo } })
         .where('id=:id', { id })
         .execute();
     } catch (error) {
