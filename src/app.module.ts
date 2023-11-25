@@ -5,6 +5,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule } from '@nestjs/config';
 import { UserModule } from './user/user.module';
 import { RoleModule } from './role/role.module';
+import { AccountModule } from './account/account.module';
 import orgmConfigLocal from './config/orgm.config.local';
 import orgmConfigProd from './config/orgm.config.prod';
 
@@ -25,6 +26,8 @@ import orgmConfigProd from './config/orgm.config.prod';
     UserModule,
 
     RoleModule,
+
+    AccountModule,
   ],
   controllers: [AppController],
   providers: [AppService],
