@@ -20,9 +20,6 @@ export class AccountService {
     createAccountDto: CreateAccountDto,
   ): Promise<Account | InsertResult | ConflictException> {
     try {
-      const accExist = await this.findAccountById(createAccountDto.accountId);
-      if (accExist) return new ConflictException();
-
       return await this.accountRepository
         .createQueryBuilder()
         .insert()
@@ -79,20 +76,6 @@ export class AccountService {
         .delete()
         .where('id=:id', { id })
         .execute();
-    } catch (error) {
-      return error;
-    }
-  }
-
-  async findAccountById(accountId: string): Promise<boolean> {
-    try {
-      const acc = await this.accountRepository
-        .createQueryBuilder()
-        .select()
-        .where('Account.accountId = :accountId', { accountId })
-        .getOne();
-      if (!acc) return false;
-      return true;
     } catch (error) {
       return error;
     }

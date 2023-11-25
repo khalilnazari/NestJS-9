@@ -6,6 +6,7 @@ import { ConfigModule } from '@nestjs/config';
 import { UserModule } from './user/user.module';
 import { RoleModule } from './role/role.module';
 import { AccountModule } from './account/account.module';
+import { ProjectsModule } from './projects/projects.module';
 import orgmConfigLocal from './config/orgm.config.local';
 import orgmConfigProd from './config/orgm.config.prod';
 
@@ -28,6 +29,8 @@ import orgmConfigProd from './config/orgm.config.prod';
     RoleModule,
 
     AccountModule,
+
+    ProjectsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
