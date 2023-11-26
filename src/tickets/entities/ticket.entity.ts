@@ -18,11 +18,11 @@ export class Ticket {
   type: string;
 
   @ManyToOne(() => Account, (account) => account.tickets)
-  account: Account;
+  account?: Account;
 
   @ManyToOne(() => Project, (project) => project.tickets)
-  project: Project;
+  project?: Project;
 
   @ManyToOne(() => User, (user) => user.tickets)
-  user: User;
+  user?: User;
 }

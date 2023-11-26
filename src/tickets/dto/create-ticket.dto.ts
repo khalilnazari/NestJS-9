@@ -8,7 +8,7 @@ export class CreateTicketDto {
   type: string;
 
   @IsString()
-  desciption: string;
+  description: string;
 
   @IsString()
   accountInfo: string;

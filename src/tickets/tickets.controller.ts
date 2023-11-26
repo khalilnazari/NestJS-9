@@ -28,7 +28,7 @@ export class TicketsController {
     @UUIDParam('id') id: string,
     @Body() updateTicketDto: UpdateTicketDto,
   ) {
-    return this.ticketsService.update(+id, updateTicketDto);
+    return this.ticketsService.update(id, updateTicketDto);
   }
 
   @Delete(':id')

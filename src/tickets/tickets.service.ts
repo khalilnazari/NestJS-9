@@ -52,8 +52,26 @@ export class TicketsService {
     }
   }
 
-  update(id: number, updateTicketDto: UpdateTicketDto) {
-    return `This action updates a #${id} ticket`;
+  async update(id: string, updateTicketDto: UpdateTicketDto) {
+    const { accountInfo, projectInfo, userInfo, ...rest } = updateTicketDto;
+
+    try {
+      const response = await this.ticketRepository
+        .createQueryBuilder()
+        .update()
+        .set({
+          ...rest,
+          account: { id: accountInfo },
+          project: { id: projectInfo },
+          user: { id: userInfo },
+        })
+        .where('id=:id', { id })
+        .execute();
+
+      return response;
+    } catch (error) {
+      return error;
+    }
   }
 
   async remove(id: string) {
