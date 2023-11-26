@@ -1,4 +1,5 @@
 import { Account } from 'src/account/entities/account.entity';
+import { Ticket } from 'src/tickets/entities/ticket.entity';
 import { User } from 'src/user/entities/user.entity';
 import {
   Column,
@@ -23,6 +24,9 @@ export class Project {
 
   @OneToMany(() => User, (user) => user.project)
   users: User[];
+
+  @OneToMany(() => Ticket, (ticket) => ticket.project)
+  tickets: Ticket[];
 
   @CreateDateColumn({
     type: 'timestamp with time zone',

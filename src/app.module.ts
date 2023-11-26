@@ -7,6 +7,7 @@ import { UserModule } from './user/user.module';
 import { RoleModule } from './role/role.module';
 import { AccountModule } from './account/account.module';
 import { ProjectsModule } from './projects/projects.module';
+import { TicketsModule } from './tickets/tickets.module';
 import orgmConfigLocal from './config/orgm.config.local';
 import orgmConfigProd from './config/orgm.config.prod';
 
@@ -31,6 +32,8 @@ import orgmConfigProd from './config/orgm.config.prod';
     AccountModule,
 
     ProjectsModule,
+
+    TicketsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

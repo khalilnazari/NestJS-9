@@ -1,6 +1,13 @@
 import { Account } from 'src/account/entities/account.entity';
 import { Project } from 'src/projects/entities/project.entity';
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { Ticket } from 'src/tickets/entities/ticket.entity';
+import {
+  Column,
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 
 @Entity('User')
 export class User {
@@ -30,4 +37,7 @@ export class User {
 
   @ManyToOne(() => Project, (project) => project.users)
   project: Project;
+
+  @OneToMany(() => Ticket, (ticket) => ticket.user)
+  tickets: Ticket[];
 }
