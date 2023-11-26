@@ -1,7 +1,7 @@
 import { Account } from 'src/account/entities/account.entity';
 import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
-import { Project } from './../../projects/entities/project.entity';
 import { User } from 'src/user/entities/user.entity';
+import { Project } from 'src/projects/entities/project.entity';
 
 @Entity('Ticket')
 export class Ticket {
@@ -9,7 +9,7 @@ export class Ticket {
   id: string;
 
   @Column({ type: 'varchar' })
-  name: string;
+  description: string;
 
   @Column({ type: 'varchar' })
   title: string;
