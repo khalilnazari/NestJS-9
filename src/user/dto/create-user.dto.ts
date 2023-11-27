@@ -21,4 +21,7 @@ export class CreateUserDto {
 
   @IsString()
   projectInfo?: string;
+
+  project: { id: string };
+  account: { id: string };
 }

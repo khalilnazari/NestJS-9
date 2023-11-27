@@ -20,19 +20,25 @@ export class UserService {
     private readonly projectService: ProjectsService,
   ) {}
 
-  async create(createUserDto: CreateUserDto): Promise<InsertResult> {
+  async create(createUserDto: CreateUserDto): Promise<User | InsertResult> {
     const { accountInfo, projectInfo, ...newUser } = createUserDto;
+    const userDTO = { ...newUser };
 
     try {
-      const projectExist = await this.projectService.findOne(projectInfo);
-      if (JSON.stringify(projectExist).includes(`"status": 404`)) {
-        throw new NotFoundException(`Project[${projectInfo}] does not exist`);
+      if (accountInfo) {
+        const projectExist = await this.projectService.findOne(projectInfo);
+        if (JSON.stringify(projectExist).includes(`"status": 404`)) {
+          throw new NotFoundException(`Project[${projectInfo}] does not exist`);
+        }
+        userDTO.account = { id: accountInfo };
       }
-
-      const accountExist = await this.accountService.findOne(accountInfo);
-      // if (accountExist.status === 404) {
-      //   throw new NotFoundException(`Account[${accountInfo}] does not exist`);
-      // }
+      if (projectInfo) {
+        const accountExist = await this.accountService.findOne(accountInfo);
+        if (JSON.stringify(accountExist).includes(`"status": 404`)) {
+          throw new NotFoundException(`Account[${accountInfo}] does not exist`);
+        }
+        userDTO.project = { id: projectInfo };
+      }
 
       const userExist = await this.usersRepository.findOneBy({
         email: createUserDto.email,
@@ -43,13 +49,7 @@ export class UserService {
       const response = await this.usersRepository
         .createQueryBuilder()
         .insert()
-        .values([
-          {
-            ...newUser,
-            account: { id: accountInfo },
-            project: { id: projectInfo },
-          },
-        ])
+        .values([userDTO])
         .execute();
 
       return response;
@@ -70,12 +70,18 @@ export class UserService {
     }
   }
 
-  async findOne(userId: string): Promise<User> {
+  async findOne(id: string): Promise<User> {
     try {
-      const user = await this.usersRepository.findOneBy({ id: userId });
+      const user = await this.usersRepository.findOne({
+        where: { id },
+        relations: {
+          account: true,
+          project: true,
+        },
+      });
 
       if (!user) {
-        throw new NotFoundException(`User[${userId}] does not exist`);
+        throw new NotFoundException(`User[${id}] does not exist`);
       }
 
       return user;
@@ -89,12 +95,14 @@ export class UserService {
     updateUserDto: UpdateUserDto,
   ): Promise<UpdateResult | User> {
     const { accountInfo, projectInfo, ...userInfo } = updateUserDto;
+    const userDTO = { ...userInfo };
     try {
       if (projectInfo) {
         const projectExist = await this.projectService.findOne(projectInfo);
         if (JSON.stringify(projectExist).includes(`"status": 404`)) {
           throw new NotFoundException(`Project[${projectInfo}] does not exist`);
         }
+        userDTO.project = { id: projectInfo };
       }
 
       if (accountInfo) {
@@ -102,6 +110,7 @@ export class UserService {
         if (JSON.stringify(accountExist).includes('404')) {
           throw new NotFoundException(`Project[${accountInfo}] does not exist`);
         }
+        userDTO.account = { id: accountInfo };
       }
 
       const userExist = await this.findOne(userId);
@@ -112,11 +121,7 @@ export class UserService {
       const response = await this.usersRepository
         .createQueryBuilder()
         .update()
-        .set({
-          ...userInfo,
-          account: { id: accountInfo },
-          project: { id: projectInfo },
-        })
+        .set(userDTO)
         .where('id = :id', { id: userId })
         .execute();
 
@@ -131,20 +136,6 @@ export class UserService {
       const userExist = await this.findOne(userId);
       if (!userExist) throw new NotFoundException();
       return this.usersRepository.delete({ id: userId });
-    } catch (error) {
-      return error;
-    }
-  }
-
-  async findByEmail(email: string): Promise<User> {
-    try {
-      const user = await this.usersRepository
-        .createQueryBuilder()
-        .where('email = :email', { email })
-        .getOne();
-
-      if (!user) throw new NotFoundException();
-      return user;
     } catch (error) {
       return error;
     }
