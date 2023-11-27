@@ -58,7 +58,7 @@ export class RoleService {
         .getOne();
 
       if (!response) {
-        return new NotFoundException();
+        throw new NotFoundException();
       }
       return response;
     } catch (error) {
@@ -90,8 +90,7 @@ export class RoleService {
   async remove(id: number): Promise<DeleteResult | NotFoundException> {
     try {
       const roleExist = await this.findOne(id);
-      if (roleExist.name === 'NotFoundException')
-        return new NotFoundException();
+      if (roleExist.name === 'NotFoundException') throw new NotFoundException();
 
       return await this.roleRepository
         .createQueryBuilder()

@@ -7,7 +7,7 @@ import { CreateAccountDto } from './dto/create-account.dto';
 import { UpdateAccountDto } from './dto/update-account.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Account } from './entities/account.entity';
-import { DeleteResult, InsertResult, Repository } from 'typeorm';
+import { DeleteResult, InsertResult, Repository, UpdateResult } from 'typeorm';
 
 @Injectable()
 export class AccountService {
@@ -18,7 +18,7 @@ export class AccountService {
 
   async create(
     createAccountDto: CreateAccountDto,
-  ): Promise<Account | InsertResult | ConflictException> {
+  ): Promise<Account | InsertResult> {
     try {
       return await this.accountRepository
         .createQueryBuilder()
@@ -27,7 +27,6 @@ export class AccountService {
         .values(createAccountDto)
         .execute();
     } catch (error) {
-      console.log(error);
       return error;
     }
   }
@@ -40,20 +39,23 @@ export class AccountService {
     }
   }
 
-  async findOne(id: string) {
+  async findOne(id: string): Promise<Account> {
     try {
       const account = await this.accountRepository.findOneBy({ id });
-      if (!account) return new NotFoundException();
+      if (!account) throw new NotFoundException();
       return account;
     } catch (error) {
       return error;
     }
   }
 
-  async update(id: string, updateAccountDto: UpdateAccountDto) {
+  async update(
+    id: string,
+    updateAccountDto: UpdateAccountDto,
+  ): Promise<UpdateResult | Account> {
     try {
       const account = await this.accountRepository.findOneBy({ id });
-      if (!account) return new NotFoundException();
+      if (!account) throw new NotFoundException();
       return await this.accountRepository
         .createQueryBuilder()
         .update()

@@ -1,5 +1,11 @@
 import { Account } from 'src/account/entities/account.entity';
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  JoinTable,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 import { User } from 'src/user/entities/user.entity';
 import { Project } from 'src/projects/entities/project.entity';
 
@@ -17,12 +23,21 @@ export class Ticket {
   @Column({ type: 'varchar' })
   type: string;
 
-  @ManyToOne(() => Account, (account) => account.tickets)
+  @ManyToOne(() => Account, (account) => account.tickets, {
+    cascade: true,
+    eager: true,
+  })
+  @JoinTable()
   account?: Account;
 
-  @ManyToOne(() => Project, (project) => project.tickets)
+  @ManyToOne(() => Project, (project) => project.tickets, {
+    cascade: true,
+    eager: true,
+  })
+  @JoinTable()
   project?: Project;
 
-  @ManyToOne(() => User, (user) => user.tickets)
+  @ManyToOne(() => User, (user) => user.tickets, { cascade: true, eager: true })
+  @JoinTable()
   user?: User;
 }

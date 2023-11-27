@@ -3,7 +3,7 @@ import { CreateProjectDto } from './dto/create-project.dto';
 import { UpdateProjectDto } from './dto/update-project.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Project } from './entities/project.entity';
-import { Repository } from 'typeorm';
+import { DeleteResult, InsertResult, Repository, UpdateResult } from 'typeorm';
 import { AccountService } from 'src/account/account.service';
 
 @Injectable()
@@ -13,13 +13,16 @@ export class ProjectsService {
     private readonly accountService: AccountService,
   ) {}
 
-  async create(createProjectDto: CreateProjectDto) {
+  async create(
+    createProjectDto: CreateProjectDto,
+  ): Promise<InsertResult | Project> {
     // check if account exist
     const { accountInfo, ...newAccount } = createProjectDto;
 
     try {
       const accountExist = await this.accountService.findOne(accountInfo);
-      if (accountExist.status === 404) return new NotFoundException();
+      if (JSON.stringify(accountExist).includes(`"status": 404`))
+        throw new NotFoundException();
 
       const res = await this.projectRepository
         .createQueryBuilder()
@@ -34,7 +37,7 @@ export class ProjectsService {
     }
   }
 
-  async findAll() {
+  async findAll(): Promise<Project[]> {
     try {
       const projects = await this.projectRepository
         .createQueryBuilder()
@@ -48,14 +51,14 @@ export class ProjectsService {
     }
   }
 
-  async findOne(id: string) {
+  async findOne(id: string): Promise<Project> {
     try {
       const project = await this.projectRepository
         .createQueryBuilder()
         .select()
         .where('id=:id', { id })
         .getOne();
-      if (!project) return new NotFoundException();
+      if (!project) throw new NotFoundException();
       return project;
     } catch (error) {
       console.log(error);
@@ -63,12 +66,16 @@ export class ProjectsService {
     }
   }
 
-  async update(id: string, updateProjectDto: UpdateProjectDto) {
+  async update(
+    id: string,
+    updateProjectDto: UpdateProjectDto,
+  ): Promise<UpdateResult | Project> {
     const { accountInfo, ...rest } = updateProjectDto;
 
     try {
       const existProject = await this.findOne(id);
-      if (existProject.status === 404) return new NotFoundException();
+      if (JSON.stringify(existProject).includes(`"status": 404`))
+        throw new NotFoundException();
 
       return await this.projectRepository
         .createQueryBuilder()
@@ -82,10 +89,11 @@ export class ProjectsService {
     }
   }
 
-  async remove(id: string) {
+  async remove(id: string): Promise<DeleteResult> {
     try {
       const existProject = await this.findOne(id);
-      if (existProject.status === 404) return new NotFoundException();
+      if (JSON.stringify(existProject).includes(`"status": 404`))
+        throw new NotFoundException();
 
       return await this.projectRepository.delete(id);
     } catch (error) {
