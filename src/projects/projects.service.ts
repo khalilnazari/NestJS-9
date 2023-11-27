@@ -18,16 +18,21 @@ export class ProjectsService {
   ): Promise<InsertResult | Project> {
     // check if account exist
     const { accountInfo, ...newAccount } = createProjectDto;
+    const projectDTO = { ...newAccount };
 
     try {
       const accountExist = await this.accountService.findOne(accountInfo);
       if (JSON.stringify(accountExist).includes(`"status": 404`))
         throw new NotFoundException();
 
+      if (accountInfo) {
+        projectDTO.account = { id: accountInfo };
+      }
+
       const res = await this.projectRepository
         .createQueryBuilder()
         .insert()
-        .values([{ ...newAccount, account: { id: accountInfo } }])
+        .values([projectDTO])
         .execute();
 
       return res;
@@ -39,10 +44,12 @@ export class ProjectsService {
 
   async findAll(): Promise<Project[]> {
     try {
-      const projects = await this.projectRepository
-        .createQueryBuilder()
-        .select()
-        .getMany();
+      // const projects = await this.projectRepository
+      //   .createQueryBuilder()
+      //   .select()
+      //   .getMany();
+
+      const projects = await this.projectRepository.find();
 
       return projects;
     } catch (error) {
@@ -54,10 +61,19 @@ export class ProjectsService {
   async findOne(id: string): Promise<Project> {
     try {
       const project = await this.projectRepository
-        .createQueryBuilder()
-        .select()
-        .where('id=:id', { id })
+        .createQueryBuilder('project')
+        .leftJoinAndSelect('project.account', 'account')
+        .where('project.id=:id', { id })
         .getOne();
+
+      // Using findOne method
+      // const project = await this.projectRepository.findOne({
+      //   where: { id },
+      //   relations: {
+      //     account: true,
+      //   },
+      // });
+
       if (!project) throw new NotFoundException();
       return project;
     } catch (error) {
@@ -71,16 +87,21 @@ export class ProjectsService {
     updateProjectDto: UpdateProjectDto,
   ): Promise<UpdateResult | Project> {
     const { accountInfo, ...rest } = updateProjectDto;
+    const projectDTO = { ...rest };
 
     try {
       const existProject = await this.findOne(id);
       if (JSON.stringify(existProject).includes(`"status": 404`))
         throw new NotFoundException();
 
+      if (accountInfo) {
+        projectDTO.account = { id: accountInfo };
+      }
+
       return await this.projectRepository
         .createQueryBuilder()
         .update()
-        .set({ ...rest, account: { id: accountInfo } })
+        .set(projectDTO)
         .where('id=:id', { id })
         .execute();
     } catch (error) {

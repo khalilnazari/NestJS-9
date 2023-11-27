@@ -5,6 +5,7 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  JoinTable,
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
@@ -19,7 +20,10 @@ export class Project {
   @Column({ type: 'varchar' })
   name: string;
 
-  @ManyToOne(() => Account, (account) => account.projects)
+  @ManyToOne(() => Account, (account) => account.projects, {
+    cascade: true,
+  })
+  @JoinTable()
   account: Account;
 
   @OneToMany(() => User, (user) => user.project)

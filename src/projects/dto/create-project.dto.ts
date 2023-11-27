@@ -6,4 +6,6 @@ export class CreateProjectDto {
 
   @IsString()
   accountInfo: string;
+
+  account?: { id: string };
 }
