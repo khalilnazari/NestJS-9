@@ -8,12 +8,6 @@ import { AccountService } from 'src/account/account.service';
 import { UserService } from 'src/user/user.service';
 import { ProjectsService } from 'src/projects/projects.service';
 
-interface UpdatedTicketObj extends UpdateTicketDto {
-  account?: { id: string };
-  user?: { id: string };
-  project?: { id: string };
-}
-
 @Injectable()
 export class TicketsService {
   constructor(
@@ -122,7 +116,7 @@ export class TicketsService {
     updateTicketDto: UpdateTicketDto,
   ): Promise<Ticket | UpdateResult> {
     const { accountInfo, projectInfo, userInfo, ...rest } = updateTicketDto;
-    const updatedTicketObj: UpdatedTicketObj = { ...rest };
+    const updatedTicketObj: UpdateTicketDto = { ...rest };
 
     try {
       // validate account

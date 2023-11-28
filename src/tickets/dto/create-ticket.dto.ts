@@ -1,4 +1,7 @@
-import { IsString } from 'class-validator';
+import { IsString, ValidateNested } from 'class-validator';
+import { CreateAccountDto } from 'src/account/dto/create-account.dto';
+import { CreateProjectDto } from 'src/projects/dto/create-project.dto';
+import { CreateUserDto } from 'src/user/dto/create-user.dto';
 
 export class CreateTicketDto {
   @IsString()
@@ -18,4 +21,9 @@ export class CreateTicketDto {
 
   @IsString()
   projectInfo: string;
+
+  @ValidateNested()
+  project?: { id: string };
+  account?: { id: string };
+  user?: { id: string };
 }
