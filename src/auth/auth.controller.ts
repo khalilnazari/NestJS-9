@@ -8,6 +8,7 @@ import {
   Delete,
   Res,
   Req,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthDto } from './dto/create-auth.dto';
@@ -33,9 +34,10 @@ export class AuthController {
     return res;
   }
 
-  @Get()
-  logout() {
-    return this.authService.logout();
+  @Post('/logout')
+  logout(@Res({ passthrough: true }) response: Response) {
+    response.clearCookie('jwt');
+    throw new UnauthorizedException();
   }
 
   @Get()
