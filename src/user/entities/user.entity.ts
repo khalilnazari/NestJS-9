@@ -32,6 +32,9 @@ export class User {
   @Column({ type: 'varchar' })
   isActive: string;
 
+  @Column({ type: 'varchar', default: null })
+  password: string;
+
   @ManyToOne(() => Account, (account) => account.users)
   account: Account;
 

@@ -10,6 +10,7 @@ import { DeleteResult, InsertResult, Repository, UpdateResult } from 'typeorm';
 import { User } from './entities/user.entity';
 import { AccountService } from 'src/account/account.service';
 import { ProjectsService } from 'src/projects/projects.service';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class UserService {
@@ -21,8 +22,11 @@ export class UserService {
   ) {}
 
   async create(createUserDto: CreateUserDto): Promise<User | InsertResult> {
-    const { accountInfo, projectInfo, ...newUser } = createUserDto;
-    const userDTO = { ...newUser };
+    const { accountInfo, projectInfo, password, ...newUser } = createUserDto;
+
+    const hashedPassword = await this.handlePasswordHash(password);
+
+    const userDTO = { ...newUser, password: hashedPassword };
 
     try {
       if (accountInfo) {
@@ -139,5 +143,11 @@ export class UserService {
     } catch (error) {
       return error;
     }
+  }
+
+  async handlePasswordHash(password: string): Promise<string> {
+    const saltOrRounds = 12;
+    const hash = await bcrypt.hash(password, saltOrRounds);
+    return hash;
   }
 }
