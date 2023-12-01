@@ -9,6 +9,8 @@ import {
   Res,
   Req,
   UnauthorizedException,
+  HttpCode,
+  HttpStatus,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthDto } from './dto/create-auth.dto';
@@ -22,11 +24,13 @@ export class AuthController {
     private readonly jwtService: JwtService,
   ) {}
 
+  @HttpCode(HttpStatus.OK)
   @Post()
   async login(
     @Body() createAuthDto: AuthDto,
     @Res({ passthrough: true }) response: Response,
   ) {
+    return await this.authService.login(createAuthDto);
     const res = await this.authService.login(createAuthDto);
 
     response.cookie('jwt', res.accessToken, { httpOnly: true });
@@ -40,7 +44,7 @@ export class AuthController {
     throw new UnauthorizedException();
   }
 
-  @Get()
+  @Get('/refereshToken')
   async refreshToken(
     @Param('id') id: string,
     @Body() createAuthDto: AuthDto,

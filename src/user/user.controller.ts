@@ -7,11 +7,13 @@ import {
   Param,
   Delete,
   ParseUUIDPipe,
+  UseGuards,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UUIDParam } from 'src/helpers/validators';
+import { AuthGuard } from 'src/auth/auth.gaurd';
 
 @Controller('user')
 export class UserController {
@@ -22,6 +24,7 @@ export class UserController {
     return this.userService.create(createUserDto);
   }
 
+  @UseGuards(AuthGuard)
   @Get()
   findAll() {
     return this.userService.findAll();
